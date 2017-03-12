@@ -5,6 +5,7 @@ import urllib2
 import time
 from bs4 import BeautifulSoup
 import argparse
+import os
 
 class Spider(object):
     """Spider for sheshou"""
@@ -23,12 +24,17 @@ class Spider(object):
         request = urllib2.Request(self.url,headers=headers)
         try:
             response = urllib2.urlopen(request)
-        except urllib2.URLError,e:
+        except (urllib2.URLError,IOError),e:
             if hasattr(e, 'code'):
                 print self.getCurrentTime(),"Faild in get the page,Error code:",e.code
                 if hasattr(e, 'reason'):
                     print self.getCurrentTime(),"Faile in get the page,Error info:",e.reason
-                return None , e.code
+            if (e.code == 404):
+                return None,e.code
+            else:
+                time.sleep(300)
+                return None,e.code     #if the spider be forbidden , try again after 300 seconds.
+
         else:
             page = response.read()
             return page,None
@@ -47,8 +53,13 @@ class Spider(object):
     def getCaptions(self,downLoadUrl,filePath,fileFormat):
         filePath = filePath+'/'+str(self.pageIndex)+'.'+str(fileFormat)
         urllib.urlretrieve(downLoadUrl,filePath)
+        if os.path.getsize(filePath) == 0:
+            os.remove(filePath)
+            return None
+        else:
+            return True
 
-user_agent = 'Chrome/56.0.2924.87'
+user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36'
 headers = {"User-Agent" : user_agent}
 origin_url = "http://assrt.net"
 
@@ -60,7 +71,8 @@ page_index = int(args.page_index)
 file_path = args.file_path
 
 num_of_download = 0
-time_interval = 2.5
+time_interval = 2
+
 spider = Spider(origin_url)
 log_file_path = file_path + '/log_file.txt'
 
@@ -70,8 +82,7 @@ while(page_index > 267855):
     if page:
         down_load_url,file_format = spider.getDownloadUrl(page)
         if down_load_url:
-            spider.getCaptions(down_load_url,file_path,file_format)
-            num_of_download += 1
+            flag = spider.getCaptions(down_load_url,file_path,file_format)
     else:
         page_index -= 5
         f = open(log_file_path,'a')
@@ -81,11 +92,19 @@ while(page_index > 267855):
         time.sleep(time_interval)
         continue
     page_index -= 5
-    f = open(log_file_path,'a')
-    f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+' has been downloaded.\n')
-    f.write(str(num_of_download)+' files has been downloaded\n\n')
-    f.close()
-    time.sleep(time_interval)
+    if flag:
+        num_of_download += 1
+        f = open(log_file_path,'a')
+        f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+' has been downloaded.\n')
+        f.write(str(num_of_download)+' files has been downloaded\n\n')
+        f.close()
+        time.sleep(time_interval)
+    else:
+        f = open(log_file_path,'a')
+        f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+" 's file is 0 bytes .\n")
+        f.write(str(num_of_download)+' files has been downloaded\n\n')
+        f.close()
+        time.sleep(time_interval)
 
 print "Down"
 
