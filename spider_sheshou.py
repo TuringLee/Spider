@@ -28,36 +28,39 @@ class Spider(object):
             if hasattr(e, 'code'):
                 print self.getCurrentTime(),"Faild in get the page,Error code:",e.code
                 if hasattr(e, 'reason'):
-                    print self.getCurrentTime(),"Faile in get the page,Error info:",e.reason
-            if (e.code == 404):
-                return None,e.code
-            else:
-                time.sleep(300)
-                return None,e.code     #if the spider be forbidden , try again after 300 seconds.
-
+                    print "Error info:",e.reason
+                if (e.code == 404):
+                    return [None,e.code]
+                else:
+                    time.sleep(300)
+                return [None,e.code]     #if the spider be forbidden , try again after 300 seconds.
         else:
             page = response.read()
-            return page,None
+            return [page,None]
             
     def getDownloadUrl(self,page):
-        if page:
-            soup = BeautifulSoup(page,'lxml')
-            downLoadUrl = soup.find(id="btn_download")['href']
-            fileFormat = downLoadUrl.split('.')[-1]
-            downLoadUrl = self.originUrl + downLoadUrl
-            return downLoadUrl,fileFormat
-        else:
-            print "Can not get the download url"
-            return None,None
+        soup = BeautifulSoup(page,'lxml')
+        downLoadUrl = soup.find(id="btn_download")['href']
+        fileFormat = downLoadUrl.split('.')[-1]
+        downLoadUrl = self.originUrl + downLoadUrl
+        return downLoadUrl,fileFormat
         
     def getCaptions(self,downLoadUrl,filePath,fileFormat):
         filePath = filePath+'/'+str(self.pageIndex)+'.'+str(fileFormat)
-        urllib.urlretrieve(downLoadUrl,filePath)
-        if os.path.getsize(filePath) == 0:
-            os.remove(filePath)
-            return None
+        try:
+            urllib.urlretrieve(downLoadUrl,filePath)
+        except (urllib2.URLError,IOError),e:  
+            if hasattr(e, 'code'):
+                print self.getCurrentTime(),"Faild in get the caption,Error code:",e.code
+                if hasattr(e, 'reason'):
+                    print "Faile in get the caption,Error info:",e.reason            
+                return e.code
         else:
-            return True
+            if os.path.getsize(filePath) == 0:
+                os.remove(filePath)
+                return True
+            else:
+                return None
 
 user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.98 Safari/537.36'
 headers = {"User-Agent" : user_agent}
@@ -78,7 +81,16 @@ log_file_path = file_path + '/log_file.txt'
 
 while(page_index > 267855):
     spider.getUrl(page_index)
-    page , error_code = spider.getPage(headers)
+    res = spider.getPage(headers)
+    if type(res) != list or len(res) != 2:
+        f = open(log_file_path,'a')
+        f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+' occur something unexpexted.\n')
+        f.write('ignore this page!')
+        f.close()
+        page_index -= 5
+        time.sleep(time_interval*10)
+        continue
+    page,error_code = res
     if page:
         down_load_url,file_format = spider.getDownloadUrl(page)
         if down_load_url:
@@ -91,22 +103,27 @@ while(page_index > 267855):
         f.close()
         time.sleep(time_interval)
         continue
-    page_index -= 5
-    if flag:
+    if flag == None:
         num_of_download += 1
         f = open(log_file_path,'a')
         f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+' has been downloaded.\n')
         f.write(str(num_of_download)+' files has been downloaded\n\n')
         f.close()
+        page_index -= 5
+        time.sleep(time_interval)
+    elif flag == True:
+        f = open(log_file_path,'a')
+        f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+" 's file is 0 bytes.\n")
+        f.write(str(num_of_download)+' files has been downloaded\n\n')
+        f.close()
+        page_index -= 5
         time.sleep(time_interval)
     else:
         f = open(log_file_path,'a')
-        f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+" 's file is 0 bytes .\n")
+        f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+" is forbidden,try again after 180 second.\n")
         f.write(str(num_of_download)+' files has been downloaded\n\n')
         f.close()
-        time.sleep(time_interval)
+        time.sleep(180)
 
 print "Down"
-
-
 
