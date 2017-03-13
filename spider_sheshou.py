@@ -24,7 +24,7 @@ class Spider(object):
         request = urllib2.Request(self.url,headers=headers)
         try:
             response = urllib2.urlopen(request)
-        except (urllib2.URLError,IOError),e:
+        except Exception , e:
             if hasattr(e, 'code'):
                 print self.getCurrentTime(),"Faild in get the page,Error code:",e.code
                 if hasattr(e, 'reason'):
@@ -34,6 +34,8 @@ class Spider(object):
                 else:
                     time.sleep(300)
                 return [None,e.code]     #if the spider be forbidden , try again after 300 seconds.
+            else:
+                return None
         else:
             page = response.read()
             return [page,None]
@@ -49,12 +51,14 @@ class Spider(object):
         filePath = filePath+'/'+str(self.pageIndex)+'.'+str(fileFormat)
         try:
             urllib.urlretrieve(downLoadUrl,filePath)
-        except (urllib2.URLError,IOError),e:  
+        except Exception,e:  
             if hasattr(e, 'code'):
                 print self.getCurrentTime(),"Faild in get the caption,Error code:",e.code
                 if hasattr(e, 'reason'):
                     print "Faile in get the caption,Error info:",e.reason            
                 return e.code
+            else:
+                return True
         else:
             if os.path.getsize(filePath) == 0:
                 os.remove(filePath)
@@ -85,7 +89,7 @@ while(page_index > 267855):
     if type(res) != list or len(res) != 2:
         f = open(log_file_path,'a')
         f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+' occur something unexpexted.\n')
-        f.write('ignore this page!')
+        f.write('Ignore this page!')
         f.close()
         page_index -= 5
         time.sleep(time_interval*10)
@@ -113,8 +117,8 @@ while(page_index > 267855):
         time.sleep(time_interval)
     elif flag == True:
         f = open(log_file_path,'a')
-        f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+" 's file is 0 bytes.\n")
-        f.write(str(num_of_download)+' files has been downloaded\n\n')
+        f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+" occur something unexpexted.\n")
+        f.write('Igore this page.\n\n')
         f.close()
         page_index -= 5
         time.sleep(time_interval)
