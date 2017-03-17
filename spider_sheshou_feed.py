@@ -84,7 +84,7 @@ class Spider(object):
                 if (e.code == 404):
                     return [None,e.code]
                 else:
-                    time.sleep(300)
+                    time.sleep(180)
                 return [None,e.code]     #if the spider be forbidden , try again after 300 seconds.
             else:
                 return None
@@ -130,7 +130,7 @@ args = parser.parse_args()
 file_path = args.file_path
 
 num_of_download = 0
-time_interval = 1
+time_interval = 20
 
 spider = Spider(origin_url,seed_url)
 log_file_path = file_path + '/log_file.txt'
@@ -146,7 +146,7 @@ for down_url in down_url_list :
         f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+' occur something unexpexted.\n')
         f.write('Ignore this page!')
         f.close()
-        time.sleep(time_interval*5)
+        time.sleep(time_interval*3)
         continue
     page,error_code = res
     if page:
@@ -158,7 +158,7 @@ for down_url in down_url_list :
         f.write(str(spider.getCurrentTime())+'Can not get the page , page_index:'+str(page_index)\
             +'\nError code is :'+str(error_code)+' .\n\n')
         f.close()
-        time.sleep(time_interval)
+        time.sleep(time_interval*3)
         continue
     if flag == None:
         num_of_download += 1
@@ -173,13 +173,14 @@ for down_url in down_url_list :
         f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+" occur something unexpexted.\n")
         f.write('Igore this page.\n\n')
         f.close()
-        time.sleep(time_interval)
+        time.sleep(time_interval*2)
+        continue
     else:
         f = open(log_file_path,'a')
         f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+" is forbidden,try again after 180 second.\n")
         f.write(str(num_of_download)+' files has been downloaded\n\n')
         f.close()
-        time.sleep(180)
+        time.sleep(time_interval*3)
 f = open(log_file_path,'a')
 f.write(str(spider.getCurrentTime())+' '+ str(num_cur_day) +' files has been downloaded \n')
 f.write('*******************************************************************************\n\n')
