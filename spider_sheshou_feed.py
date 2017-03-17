@@ -43,15 +43,15 @@ class Spider(object):
 
             cur_time = time.strftime("%a, %d %b %Y",time.gmtime())
 
-            ct = cur_time.split(' ')
+#            ct = cur_time.split(' ')
+#
+#            ct[0] = ct[0].split(',')[0]
+#            ct[0] = (week_to_num[ct[0]]+7-1)%7
+#            ct[0] = str(num_to_week[ct[0]])+','
 
-            ct[0] = ct[0].split(',')[0]
-            ct[0] = (week_to_num[ct[0]]+7-1)%7
-            ct[0] = str(num_to_week[ct[0]])+','
+#            ct[1] = str(int(ct[1]) -1)
 
-            ct[1] = str(int(ct[1]) -1)
-
-            cur_time = ct[0]+' '+ct[1]+' '+ct[2]+' '+ct[3]
+#            cur_time = ct[0]+' '+ct[1]+' '+ct[2]+' '+ct[3]
 
             pattern_time = re.compile(cur_time)
             pattern_guid = re.compile('<guid>(.*?)</guid>')
