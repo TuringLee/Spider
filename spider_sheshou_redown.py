@@ -78,7 +78,7 @@ index_file = args.page_index
 file_path = args.file_path
 
 num_of_download = 0
-time_interval = 2
+time_interval = 3
 
 spider = Spider(origin_url)
 log_file_path = file_path + '/log_file.txt'
@@ -95,7 +95,7 @@ for page_index in index_list:
         f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+' occur something unexpexted_1.\n')
         f.write('Ignore this page!\n\n')
         f.close()
-        time.sleep(time_interval*30)
+        time.sleep(time_interval*20)
         continue
     page,error_code = res
     if page:
@@ -107,7 +107,7 @@ for page_index in index_list:
         f.write(str(spider.getCurrentTime())+'Can not get the page , page_index:'+str(page_index)\
             +'\nError code is :'+str(error_code)+' .\n\n')
         f.close()
-        time.sleep(time_interval*30)
+        time.sleep(time_interval*20)
         continue
     if flag == None:
         num_of_download += 1
@@ -122,7 +122,7 @@ for page_index in index_list:
         f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+" occur something unexpexted_2.\n")
         f.write('Igore this page.\n\n')
         f.close()
-        time.sleep(time_interval*30)
+        time.sleep(time_interval*20)
     else:
         f = open(log_file_path,'a')
         f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+" is forbidden,try again after 180 second.\n")
