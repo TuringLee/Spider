@@ -60,7 +60,7 @@ class Spider(object):
             else:
                 return True
         else:
-            if os.path.getsize(filePath) == 0:
+            if os.path.getsize(filePath)/1000 < 10:
                 os.remove(filePath)
                 return True
             else:
@@ -92,10 +92,10 @@ for page_index in index_list:
     res = spider.getPage(headers)
     if type(res) != list or len(res) != 2:
         f = open(log_file_path,'a')
-        f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+' occur something unexpexted.\n')
-        f.write('Ignore this page!')
+        f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+' occur something unexpexted_1.\n')
+        f.write('Ignore this page!\n\n')
         f.close()
-        time.sleep(time_interval*10)
+        time.sleep(time_interval*30)
         continue
     page,error_code = res
     if page:
@@ -107,7 +107,7 @@ for page_index in index_list:
         f.write(str(spider.getCurrentTime())+'Can not get the page , page_index:'+str(page_index)\
             +'\nError code is :'+str(error_code)+' .\n\n')
         f.close()
-        time.sleep(time_interval)
+        time.sleep(time_interval*30)
         continue
     if flag == None:
         num_of_download += 1
@@ -116,12 +116,13 @@ for page_index in index_list:
         f.write(str(num_of_download)+' files has been downloaded\n\n')
         f.close()
         time.sleep(time_interval)
+
     elif flag == True:
         f = open(log_file_path,'a')
-        f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+" occur something unexpexted.\n")
+        f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+" occur something unexpexted_2.\n")
         f.write('Igore this page.\n\n')
         f.close()
-        time.sleep(time_interval)
+        time.sleep(time_interval*30)
     else:
         f = open(log_file_path,'a')
         f.write(str(spider.getCurrentTime())+' page_index:'+str(page_index)+" is forbidden,try again after 180 second.\n")
